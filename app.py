@@ -115,7 +115,7 @@ if api_key:
                 """
                 <div class="logo-container-landing">
                     <div class="logo-text">⚡ RoohithxAI</div>
-                    <div class="logo-sub">How can I help you today?</div>
+                    <div class="logo-sub">Hello Roohith, what's on your mind?</div>
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -166,9 +166,8 @@ if api_key:
             
             if is_image_request:
                 try:
-                    # UPDATED LINE FOR THE INTERNET SERVER ENGINE
                     result = client.models.generate_images(
-                        model='imagen-3.0-generate-001',
+                        model='imagen-3.0-generate-002',
                         prompt=last_user_input,
                         config=dict(number_of_images=1, aspect_ratio="1:1", output_mime_type="image/jpeg")
                     )
