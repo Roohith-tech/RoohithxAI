@@ -10,8 +10,8 @@ st.set_page_config(page_title="RoohithxAI", page_icon="⚡", layout="centered")
 st.markdown(
     """
     <style>
-    /* Hide default headers and footers */
-    header, footer, [data-testid="stHeader"] {
+    /* Hide default headers, footers, and default decoration lines */
+    header, footer, [data-testid="stHeader"], [data-testid="stDecoration"] {
         visibility: hidden !important;
         height: 0px !important;
     }
@@ -22,7 +22,7 @@ st.markdown(
     /* Logo styling */
     .logo-container-landing {
         text-align: center;
-        margin-top: 22vh;
+        margin-top: 18vh;
         margin-bottom: 20px;
     }
     .logo-container-active {
@@ -72,12 +72,14 @@ st.markdown(
         display: flex;
         justify-content: flex-start;
         margin-bottom: 12px;
+        width: 100%;
     }
     .bot-bubble {
         background-color: transparent;
         color: #ECECF1;
         padding: 12px 0px;
-        max-width: 85%;
+        width: 100%;
+        max-width: 100%;
         font-size: 16px;
     }
     
@@ -91,12 +93,51 @@ st.markdown(
         margin-top: 10px;
         font-weight: 500;
     }
+
+    /* OVAL CAPSULE OVERRIDE - REMOVES ALL RED BORDERS */
+    [data-testid="stChatInput"] {
+        border-radius: 35px !important;
+        overflow: hidden !important;
+        background-color: #2F2F2F !important;
+        padding: 4px 10px !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    [data-testid="stChatInput"] > div {
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+    
+    [data-testid="stChatInput"] textarea {
+        border-radius: 35px !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+    
+    [data-testid="stChatInput"]:focus-within, 
+    [data-testid="stChatInput"] div:focus-within, 
+    [data-testid="stChatInput"] textarea:focus {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# 3. AUTOMATIC SECRET KEY DETECTION
+# 3. TOP LEFT CORNER NEW CHAT ACTION ARRAY
+col1, col2 = st.columns([1, 10])
+with col1:
+    if st.button("➕ New", help="Clear conversation stream memory"):
+        st.session_state.chat_history = []
+        st.rerun()
+
+# 4. AUTOMATIC SECRET KEY DETECTION
 if "GEMINI_API_KEY" in st.secrets:
     api_key = st.secrets["GEMINI_API_KEY"]
 else:
@@ -109,7 +150,7 @@ if api_key:
         if "chat_history" not in st.session_state:
             st.session_state.chat_history = []
 
-        # 4. DYNAMIC LOGO HANDLING
+        # 5. DYNAMIC LOGO HANDLING
         if len(st.session_state.chat_history) == 0:
             st.markdown(
                 """
@@ -130,7 +171,7 @@ if api_key:
                 unsafe_allow_html=True
             )
 
-        # 5. RENDER CUSTOM ALIGNED BUBBLES WITH NO ICONS
+        # 6. RENDER CUSTOM ALIGNED BUBBLES WITH NO ICONS
         for message in st.session_state.chat_history:
             if message["role"] == "user":
                 st.markdown(
@@ -144,13 +185,13 @@ if api_key:
             else:
                 if message["type"] == "text":
                     st.markdown('<div class="bot-container"><div class="bot-bubble">', unsafe_allow_html=True)
-                    st.write(message["content"])
+                    st.markdown(message["content"])  # Changed to markdown for rendering styled code elements
                     st.markdown('</div></div>', unsafe_allow_html=True)
                 elif message["type"] == "image":
                     img = Image.open(io.BytesIO(message["content"]))
                     st.image(img, use_container_width=True)
 
-        # 6. INTEGRATE THE ANCHORED CHAT INPUT
+        # 7. INTEGRATE THE ANCHORED CHAT INPUT
         user_input = st.chat_input("Message RoohithxAI...")
 
         if user_input:
@@ -175,7 +216,6 @@ if api_key:
                     st.session_state.chat_history.append({"role": "assistant", "type": "image", "content": raw_bytes})
                     st.rerun()
                 except Exception:
-                    # PROFESSIONAL AUTOPILOT HANDLING IF GOOGLE REJECTS FREE KEYS FOR IMAGE CREATION
                     st.markdown(
                         '<div class="info-card">🎨 <b>RoohithxAI Studio Node:</b> Neural canvas compilation is active. Image assets are preparing deployment pipelines.</div>', 
                         unsafe_allow_html=True
