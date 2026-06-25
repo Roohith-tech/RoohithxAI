@@ -161,13 +161,14 @@ if api_key:
         if len(st.session_state.chat_history) > 0 and st.session_state.chat_history[-1]["role"] == "user":
             last_user_input = st.session_state.chat_history[-1]["content"]
             
-            image_keywords = ["create an image", "generate an image", "generate a picture", "paint", "draw", "make a photo"]
+            image_keywords = ["create an image", "generate an image", "generate a picture", "paint", "draw", "make a photo", "create an image of"]
             is_image_request = any(keyword in last_user_input.lower() for keyword in image_keywords)
             
             if is_image_request:
                 try:
+                    # UPDATED LINE FOR THE INTERNET SERVER ENGINE
                     result = client.models.generate_images(
-                        model='imagen-3.0-generate-002',
+                        model='imagen-3.0-generate-001',
                         prompt=last_user_input,
                         config=dict(number_of_images=1, aspect_ratio="1:1", output_mime_type="image/jpeg")
                     )
@@ -177,7 +178,6 @@ if api_key:
                 except Exception as img_err:
                     st.error(f"Image Engine Error: {img_err}")
             else:
-                # Try fallback models if Google channels experience traffic load
                 try:
                     response = client.models.generate_content(model='gemini-2.5-pro', contents=last_user_input)
                     st.session_state.chat_history.append({"role": "assistant", "type": "text", "content": response.text})
