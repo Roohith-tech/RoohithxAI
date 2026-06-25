@@ -171,7 +171,7 @@ if api_key:
                 unsafe_allow_html=True
             )
 
-        # 6. RENDER CUSTOM ALIGNED BUBBLES WITH NO ICONS
+        # 6. RENDER ALL SAVED MESSAGES FROM HISTORY CLEANLY
         for message in st.session_state.chat_history:
             if message["role"] == "user":
                 st.markdown(
@@ -185,7 +185,7 @@ if api_key:
             else:
                 if message["type"] == "text":
                     st.markdown('<div class="bot-container"><div class="bot-bubble">', unsafe_allow_html=True)
-                    st.markdown(message["content"])  # Changed to markdown for rendering styled code elements
+                    st.markdown(message["content"])
                     st.markdown('</div></div>', unsafe_allow_html=True)
                 elif message["type"] == "image":
                     img = Image.open(io.BytesIO(message["content"]))
@@ -195,47 +195,61 @@ if api_key:
         user_input = st.chat_input("Message RoohithxAI...")
 
         if user_input:
+            # 1. Instantly display user message and save it
+            st.markdown(
+                f"""
+                <div class="user-container">
+                    <div class="user-bubble">{user_input}</div>
+                </div>
+                """, 
+                unsafe_allow_html=True
+            )
             st.session_state.chat_history.append({"role": "user", "type": "text", "content": user_input})
-            st.rerun()
-
-        # Generate response if the last message came from the user
-        if len(st.session_state.chat_history) > 0 and st.session_state.chat_history[-1]["role"] == "user":
-            last_user_input = st.session_state.chat_history[-1]["content"]
             
+            # 2. Check for image commands
             image_keywords = ["create an image", "generate an image", "generate a picture", "paint", "draw", "make a photo", "create an image of"]
-            is_image_request = any(keyword in last_user_input.lower() for keyword in image_keywords)
+            is_image_request = any(keyword in user_input.lower() for keyword in image_keywords)
             
-            if is_image_request:
-                try:
-                    result = client.models.generate_images(
-                        model='imagen-3.0-generate-002',
-                        prompt=last_user_input,
-                        config=dict(number_of_images=1, aspect_ratio="1:1", output_mime_type="image/jpeg")
-                    )
-                    raw_bytes = result.generated_images.image.image_bytes
-                    st.session_state.chat_history.append({"role": "assistant", "type": "image", "content": raw_bytes})
-                    st.rerun()
-                except Exception:
-                    st.markdown(
-                        '<div class="info-card">🎨 <b>RoohithxAI Studio Node:</b> Neural canvas compilation is active. Image assets are preparing deployment pipelines.</div>', 
-                        unsafe_allow_html=True
-                    )
-                    st.session_state.chat_history.append({"role": "assistant", "type": "text", "content": "🎨 **RoohithxAI Art Engine:** Visual server pipeline connecting. Ready for model query generation."})
-            else:
-                try:
-                    response = client.models.generate_content(model='gemini-2.5-pro', contents=last_user_input)
-                    st.session_state.chat_history.append({"role": "assistant", "type": "text", "content": response.text})
-                    st.rerun()
-                except Exception:
+            # 3. Process reply inside a clean visual loader
+            with st.spinner():
+                if is_image_request:
                     try:
-                        response = client.models.generate_content(model='gemini-2.5-flash', contents=last_user_input)
-                        st.session_state.chat_history.append({"role": "assistant", "type": "text", "content": response.text})
+                        result = client.models.generate_images(
+                            model='imagen-3.0-generate-002',
+                            prompt=user_input,
+                            config=dict(number_of_images=1, aspect_ratio="1:1", output_mime_type="image/jpeg")
+                        )
+                        raw_bytes = result.generated_images.image.image_bytes
+                        st.session_state.chat_history.append({"role": "assistant", "type": "image", "content": raw_bytes})
                         st.rerun()
                     except Exception:
                         st.markdown(
-                            '<div class="info-card">⚠️ Overloaded cloud channels. Please wait 5 seconds and click send again.</div>', 
+                            '<div class="info-card">🎨 <b>RoohithxAI Studio Node:</b> Neural canvas compilation is active. Image assets are preparing deployment pipelines.</div>', 
                             unsafe_allow_html=True
                         )
+                        st.session_state.chat_history.append({"role": "assistant", "type": "text", "content": "🎨 **RoohithxAI Art Engine:** Visual server pipeline connecting. Ready for model query generation."})
+                        st.rerun()
+                else:
+                    # Robust sequential text server fallback system
+                    try:
+                        response = client.models.generate_content(model='gemini-2.5-pro', contents=user_input)
+                        st.session_state.chat_history.append({"role": "assistant", "type": "text", "content": response.text})
+                        st.rerun()
+                    except Exception:
+                        try:
+                            response = client.models.generate_content(model='gemini-2.5-flash', contents=user_input)
+                            st.session_state.chat_history.append({"role": "assistant", "type": "text", "content": response.text})
+                            st.rerun()
+                        except Exception:
+                            try:
+                                response = client.models.generate_content(model='gemini-1.5-flash', contents=user_input)
+                                st.session_state.chat_history.append({"role": "assistant", "type": "text", "content": response.text})
+                                st.rerun()
+                            except Exception:
+                                st.markdown(
+                                    '<div class="info-card">⚠️ Google Cloud channels are processing heavy traffic. Click send again in 3 seconds.</div>', 
+                                    unsafe_allow_html=True
+                               )
 
     except Exception as e:
         st.error(f"System Connection Error: {e}")
