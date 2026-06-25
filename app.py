@@ -6,7 +6,7 @@ import io
 # 1. CONFIGURE WINDOW & THEME BASICS
 st.set_page_config(page_title="RoohithxAI", page_icon="⚡", layout="centered")
 
-# 2. INJECT CSS FOR ALIGNMENT, CHAT BUBBLES, REMOVING PROFILE ICONS, AND OVAL INPUT
+# 2. INJECT CSS FOR ALIGNMENT, CHAT BUBBLES, REMOVING PROFILE ICONS, AND OVAL NO-BORDER INPUT
 st.markdown(
     """
     <style>
@@ -92,16 +92,27 @@ st.markdown(
         font-weight: 500;
     }
 
-    /* CUSTOM OVAL CHAT INPUT BAR STYLING */
+    /* PREMIUM OVAL CAPSULE INPUT WITH REMOVED BORDERS */
     [data-testid="stChatInput"] {
         border-radius: 35px !important;
         overflow: hidden !important;
         background-color: #2F2F2F !important;
         padding: 4px 10px !important;
+        border: none !important;
+        box-shadow: none !important;
     }
     [data-testid="stChatInput"] textarea {
         border-radius: 35px !important;
         background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* Completely kill focused red outlines when clicking inside the input box */
+    [data-testid="stChatInput"]:focus-within {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
     }
     </style>
     """,
